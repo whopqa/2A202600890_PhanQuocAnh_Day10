@@ -3,7 +3,7 @@
 
 version: "1.0"
 dataset: "kb_chunk_export"
-owner_team: "__TODO__"
+owner_team: "cs-it-helpdesk-data"
 
 schema_cleaned:
   chunk_id:
@@ -32,11 +32,23 @@ quality_rules:
   - id: "no_stale_refund_window"
     description: "Không được để chunk policy refund chứa cửa sổ 14 ngày (lệch so với v4 = 7 ngày)"
     severity: "halt"
+  - id: "stale_hr_policy_content"
+    description: "Loại annual leave bản HR 2025 dù export timestamp mới"
+    severity: "halt"
+  - id: "sanitize_noisy_prefix"
+    description: "Loại prefix nhiễu như 'Nội dung không rõ ràng:' hoặc '!!!' trước dedupe/embed"
+    severity: "warn"
+  - id: "exported_at_iso_datetime"
+    description: "Chuẩn hoá exported_at sang ISO datetime để freshness/audit dùng được"
+    severity: "halt"
+  - id: "required_doc_coverage"
+    description: "Cleaned snapshot phải còn đủ policy_refund_v4, sla_p1_2026, it_helpdesk_faq, hr_leave_policy, access_control_sop"
+    severity: "halt"
 
 freshness:
   measured_at: "publish"  # ingest | cleaned | publish
   sla_hours: 24
-  alert_channel: "__TODO__"
+  alert_channel: "#data-observability"
 
 canonical_sources:
   - path: "data/docs/policy_refund_v4.txt"
@@ -47,14 +59,15 @@ canonical_sources:
     doc_id: "it_helpdesk_faq"
   - path: "data/docs/hr_leave_policy.txt"
     doc_id: "hr_leave_policy"
-
+  - path: "data/docs/access_control_sop.txt"
+    doc_id: "access_control_sop"
 # Baseline allowlist export — nhóm mở rộng doc mới phải đồng bộ cleaning_rules + contract.
 allowed_doc_ids:
   - policy_refund_v4
   - sla_p1_2026
   - it_helpdesk_faq
   - hr_leave_policy
-
+  - access_control_sop
 # Merit/Distinction: có thể đưa cutoff versioning vào env và tham chiếu ở đây (tránh hard-code trong code).
 policy_versioning:
   hr_leave_min_effective_date: "2026-01-01"

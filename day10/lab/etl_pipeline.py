@@ -88,7 +88,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         log("PIPELINE_HALT: expectation suite failed (halt).")
         return 2
     if halt and args.skip_validate:
-        log("WARN: expectation failed but --skip-validate → tiếp tục embed (chỉ dùng cho demo Sprint 3).")
+        log("WARN: expectation failed but --skip-validate, continue embedding for Sprint 3 demo only.")
 
     # Embed
     embed_ok = cmd_embed_internal(
@@ -133,7 +133,7 @@ def cmd_embed_internal(cleaned_csv: Path, *, run_id: str, log) -> bool:
         import chromadb
         from chromadb.utils import embedding_functions
     except ImportError:
-        log("ERROR: chromadb chưa cài. pip install -r requirements.txt")
+        log("ERROR: chromadb not installed. Run pip install -r requirements.txt")
         return False
 
     db_path = os.environ.get("CHROMA_DB_PATH", str(ROOT / "chroma_db"))
@@ -144,7 +144,7 @@ def cmd_embed_internal(cleaned_csv: Path, *, run_id: str, log) -> bool:
 
     rows = load_csv(cleaned_csv)
     if not rows:
-        log("WARN: cleaned CSV rỗng — không embed.")
+        log("WARN: cleaned CSV is empty - nothing to embed.")
         return True
 
     client = chromadb.PersistentClient(path=db_path)

@@ -26,6 +26,13 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
     should_halt = True nếu có bất kỳ expectation severity halt nào fail.
     """
     results: List[ExpectationResult] = []
+    required_docs = {
+        "policy_refund_v4",
+        "sla_p1_2026",
+        "it_helpdesk_faq",
+        "hr_leave_policy",
+        "access_control_sop",
+    }
 
     # E1: có ít nhất 1 dòng sau clean
     ok = len(cleaned_rows) >= 1
@@ -100,7 +107,13 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
         r
         for r in cleaned_rows
         if r.get("doc_id") == "hr_leave_policy"
-        and "10 ngày phép năm" in (r.get("chunk_text") or "")
+        and (
+            "bản hr 2025" in (r.get("chunk_text") or "").lower()
+            or (
+                "dưới 3 năm kinh nghiệm" in (r.get("chunk_text") or "").lower()
+                and "10 ngày phép năm" in (r.get("chunk_text") or "").lower()
+            )
+        )
     ]
     ok6 = len(bad_hr_annual) == 0
     results.append(
@@ -109,6 +122,35 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
             ok6,
             "halt",
             f"violations={len(bad_hr_annual)}",
+        )
+    )
+
+    # E7: cleaned phải còn đủ các doc canonical phục vụ grading
+    present_docs = {r.get("doc_id", "") for r in cleaned_rows}
+    missing_docs = sorted(required_docs - present_docs)
+    ok7 = len(missing_docs) == 0
+    results.append(
+        ExpectationResult(
+            "required_doc_coverage",
+            ok7,
+            "halt",
+            f"missing_docs={missing_docs}",
+        )
+    )
+
+    # E8: exported_at phải là ISO datetime sau clean để freshness/audit đáng tin
+    exported_bad = [
+        r
+        for r in cleaned_rows
+        if not re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$", (r.get("exported_at") or "").strip())
+    ]
+    ok8 = len(exported_bad) == 0
+    results.append(
+        ExpectationResult(
+            "exported_at_iso_datetime",
+            ok8,
+            "halt",
+            f"bad_exported_at_rows={len(exported_bad)}",
         )
     )
 
