@@ -1,6 +1,6 @@
 # Kiến trúc pipeline — Lab Day 10
 
-**Nhóm:** _______________  
+**MSSV:** Phan Quốc Anh 
 **Cập nhật:** 2026-06-10
 
 ---

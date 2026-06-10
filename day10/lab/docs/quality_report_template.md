@@ -1,6 +1,6 @@
 # Quality report — Lab Day 10 (nhóm)
 
-**run_id:** `codex-good-submit`  
+**MSSV:** Phan Quốc Anh 
 **Ngày:** 2026-06-10
 
 ---
